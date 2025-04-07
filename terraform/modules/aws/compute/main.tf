@@ -25,6 +25,16 @@ resource "aws_instance" "web" {
 
   user_data = <<-EOF
               #!/bin/bash
+              # Install required packages
+              apt-get update
+              apt-get install -y awscli
+
+              # Configure AWS region
+              mkdir -p /home/ubuntu/.aws
+              echo "[default]" > /home/ubuntu/.aws/config
+              echo "region = ${data.aws_region.current.name}" >> /home/ubuntu/.aws/config
+              chown -R ubuntu:ubuntu /home/ubuntu/.aws
+
               # Install CloudWatch agent
               wget https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb
               dpkg -i amazon-cloudwatch-agent.deb

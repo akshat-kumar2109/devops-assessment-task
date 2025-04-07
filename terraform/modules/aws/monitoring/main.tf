@@ -22,6 +22,34 @@ resource "aws_iam_role_policy_attachment" "cloudwatch_agent" {
   policy_arn = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
 }
 
+# Add ECR policy to allow EC2 to pull images
+resource "aws_iam_role_policy" "ecr_policy" {
+  name = "${var.project_name}-ecr-policy"
+  role = aws_iam_role.cloudwatch_agent.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "ecr:GetAuthorizationToken"
+        ]
+        Resource = "*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "ecr:BatchCheckLayerAvailability",
+          "ecr:GetDownloadUrlForLayer",
+          "ecr:BatchGetImage"
+        ]
+        Resource = "arn:aws:ecr:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:repository/${var.project_name}-app"
+      }
+    ]
+  })
+}
+
 resource "aws_iam_instance_profile" "cloudwatch_agent" {
   name = "${var.project_name}-cloudwatch-agent-profile"
   role = aws_iam_role.cloudwatch_agent.name
@@ -179,4 +207,5 @@ resource "aws_cloudwatch_dashboard" "main" {
   })
 }
 
-data "aws_region" "current" {} 
+data "aws_region" "current" {}
+data "aws_caller_identity" "current" {} 
