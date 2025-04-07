@@ -1,0 +1,26 @@
+{
+  "name": "app",
+  "version": "1.0.0",
+  "description": "",
+  "homepage": "https://github.com/akshat-kumar2109/devops-assessment-task#readme",
+  "bugs": {
+    "url": "https://github.com/akshat-kumar2109/devops-assessment-task/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/akshat-kumar2109/devops-assessment-task.git"
+  },
+  "license": "ISC",
+  "author": "Akshat Kumar",
+  "type": "commonjs",
+  "main": "index.js",
+  "dependencies": {
+    "express": "^4.18.2",
+    "winston": "^3.11.0",
+    "winston-cloudwatch": "^3.3.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
+  }
+}
