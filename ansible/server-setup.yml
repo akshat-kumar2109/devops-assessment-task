@@ -53,27 +53,6 @@
         groups: docker
         append: yes
 
-    - name: Install Node.js repository
-      shell: |
-        curl -fsSL https://deb.nodesource.com/setup_{{ node_version }} | bash -
-      args:
-        warn: false
-
-    - name: Install Node.js and npm
-      apt:
-        name: 
-          - nodejs
-          - npm
-        state: present
-
-    - name: Create application directory
-      file:
-        path: /opt/node-app
-        state: directory
-        owner: ubuntu
-        group: ubuntu
-        mode: '0755'
-
     - name: Ensure Docker service is running
       service:
         name: docker
