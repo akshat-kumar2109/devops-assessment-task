@@ -18,6 +18,7 @@ jobs:
       with:
         node-version: '22.x'
         cache: 'npm'
+        cache-dependency-path: node-app/package-lock.json
         
     - name: Build Docker image
       run: |
