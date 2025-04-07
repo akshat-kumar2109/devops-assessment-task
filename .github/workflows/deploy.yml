@@ -19,11 +19,6 @@ jobs:
         node-version: '18.x'
         cache: 'npm'
         
-    - name: Install dependencies
-      run: |
-        cd node-app
-        npm ci
-        
     - name: Build Docker image
       run: |
         cd node-app
