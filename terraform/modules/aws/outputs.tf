@@ -4,7 +4,7 @@ output "instance_id" {
 }
 
 output "instance_public_ip" {
-  description = "Public IP address of the EC2 instance"
+  description = "Public IP of the EC2 instance"
   value       = module.compute.instance_public_ip
 }
 
@@ -21,4 +21,14 @@ output "vpc_id" {
 output "subnet_ids" {
   description = "IDs of the subnets"
   value       = module.network.subnet_ids
+}
+
+output "ecr_repository_url" {
+  description = "URL of the ECR repository"
+  value       = module.ecr.repository_url
+}
+
+output "ecr_repository_name" {
+  description = "Name of the ECR repository"
+  value       = module.ecr.repository_name
 }

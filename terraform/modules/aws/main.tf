@@ -8,6 +8,12 @@ module "monitoring" {
   tags = var.tags
 }
 
+module "ecr" {
+  source = "./ecr"
+  repository_name = "${var.project_name}-app"
+  tags = var.tags
+}
+
 module "compute" {
   source = "./compute"
   availability_zone = "us-east-1a"
