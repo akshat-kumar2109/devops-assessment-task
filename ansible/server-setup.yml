@@ -5,8 +5,11 @@
   vars:
     node_version: "18.x"
     docker_version: "24.0.7"
+    aws_region: "{{ aws_region | default('us-east-1') }}"
+    cloudwatch_config_file: "/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json"
 
   tasks:
+    # System Setup
     - name: Update apt cache
       apt:
         update_cache: yes
@@ -24,8 +27,55 @@
           - python3-setuptools
           - git
           - build-essential
+          - wget
+          - unzip
         state: present
 
+    - name: Install AWS CLI
+      pip:
+        name: awscli
+        state: present
+
+    # Directory Setup
+    - name: Create required directories
+      file:
+        path: "{{ item.path }}"
+        state: directory
+        owner: "{{ item.owner | default('root') }}"
+        group: "{{ item.group | default('root') }}"
+        mode: "{{ item.mode | default('0755') }}"
+      loop:
+        - { path: "/opt/node-app", owner: "ubuntu", group: "ubuntu" }
+        - { path: "/var/log/node-app", owner: "ubuntu", group: "ubuntu" }
+        - { path: "/opt/aws/amazon-cloudwatch-agent/etc" }
+        - { path: "/home/ubuntu/.aws", owner: "ubuntu", group: "ubuntu", mode: "0700" }
+
+    # CloudWatch Agent Setup
+    - name: Download CloudWatch Agent
+      get_url:
+        url: https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb
+        dest: /tmp/amazon-cloudwatch-agent.deb
+        mode: '0644'
+
+    - name: Install CloudWatch Agent
+      apt:
+        deb: /tmp/amazon-cloudwatch-agent.deb
+        state: present
+
+    - name: Copy CloudWatch Agent configuration
+      template:
+        src: templates/amazon-cloudwatch-agent.json.j2
+        dest: "{{ cloudwatch_config_file }}"
+        mode: '0644'
+      notify: Restart CloudWatch Agent
+
+    - name: Start CloudWatch Agent
+      systemd:
+        name: amazon-cloudwatch-agent
+        state: started
+        enabled: yes
+
+    # Docker Setup
     - name: Add Docker GPG key
       apt_key:
         url: https://download.docker.com/linux/ubuntu/gpg
@@ -57,4 +107,10 @@
       service:
         name: docker
         state: started
-        enabled: yes 
+        enabled: yes
+
+  handlers:
+    - name: Restart CloudWatch Agent
+      systemd:
+        name: amazon-cloudwatch-agent
+        state: restarted 
