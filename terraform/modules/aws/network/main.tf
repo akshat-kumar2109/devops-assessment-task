@@ -24,6 +24,13 @@ module "security_group" {
     from_port   = 22
     to_port     = 22
     description = "Allow all ssh"
+  },
+  {
+    cidr_blocks = "0.0.0.0/0"
+    protocol    = "tcp"
+    from_port   = 80
+    to_port     = 80
+    description = "Allow all ssh"
   }]
   vpc_id = module.vpc.vpc_id
 }

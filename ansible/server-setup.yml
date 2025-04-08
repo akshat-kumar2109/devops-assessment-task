@@ -3,9 +3,7 @@
   hosts: all
   become: yes
   vars:
-    node_version: "18.x"
-    docker_version: "24.0.7"
-    aws_region: "{{ aws_region | default('us-east-1') }}"
+    aws_region: "us-east-1"
     cloudwatch_config_file: "/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json"
 
   tasks:
@@ -29,6 +27,7 @@
           - build-essential
           - wget
           - unzip
+          - nginx
         state: present
 
     - name: Install AWS CLI
@@ -49,6 +48,15 @@
         - { path: "/var/log/node-app", owner: "ubuntu", group: "ubuntu" }
         - { path: "/opt/aws/amazon-cloudwatch-agent/etc" }
         - { path: "/home/ubuntu/.aws", owner: "ubuntu", group: "ubuntu", mode: "0700" }
+
+    # AWS Configuration
+    - name: Configure AWS CLI
+      template:
+        src: templates/aws-config.j2
+        dest: /home/ubuntu/.aws/config
+        owner: ubuntu
+        group: ubuntu
+        mode: '0600'
 
     # CloudWatch Agent Setup
     - name: Download CloudWatch Agent
@@ -109,8 +117,50 @@
         state: started
         enabled: yes
 
+    # Nginx Setup
+    - name: Configure Nginx reverse proxy
+      template:
+        src: templates/nginx.conf.j2
+        dest: /etc/nginx/sites-available/node-app.conf
+        mode: '0644'
+      notify: Restart Nginx
+
+    - name: Remove default Nginx site
+      file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+      notify: Restart Nginx
+
+    - name: Enable Node.js application site
+      file:
+        src: /etc/nginx/sites-available/node-app.conf
+        dest: /etc/nginx/sites-enabled/node-app.conf
+        state: link
+      notify: Restart Nginx
+
+    - name: Ensure Nginx directories exist
+      file:
+        path: "{{ item }}"
+        state: directory
+        mode: '0755'
+      loop:
+        - /var/log/nginx
+        - /etc/nginx/sites-available
+        - /etc/nginx/sites-enabled
+
+    - name: Start and enable Nginx
+      service:
+        name: nginx
+        state: started
+        enabled: yes
+
   handlers:
     - name: Restart CloudWatch Agent
       systemd:
         name: amazon-cloudwatch-agent
+        state: restarted
+
+    - name: Restart Nginx
+      systemd:
+        name: nginx
         state: restarted 
