@@ -1,0 +1,154 @@
+---
+- name: Set up IBM Cloud instances
+  hosts: ibm_instances
+  become: yes
+  gather_facts: yes
+
+  vars:
+    app_user: nodeapp
+    app_group: nodeapp
+    app_dir: /opt/node-app
+    log_dir: /var/log/node-app
+
+  tasks:
+    # System Setup
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Install required packages
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg
+          - software-properties-common
+          - python3-pip
+          - git
+          - unzip
+          - nginx
+        state: present
+
+    # User and Group Setup
+    - name: Create application group
+      group:
+        name: "{{ app_group }}"
+        state: present
+
+    - name: Create application user
+      user:
+        name: "{{ app_user }}"
+        group: "{{ app_group }}"
+        system: yes
+        shell: /bin/bash
+        create_home: yes
+        home: "/home/{{ app_user }}"
+
+    # Directory Setup
+    - name: Create application directories
+      file:
+        path: "{{ item.path }}"
+        state: directory
+        owner: "{{ app_user }}"
+        group: "{{ app_group }}"
+        mode: "{{ item.mode }}"
+      loop:
+        - { path: "{{ app_dir }}", mode: '0755' }
+        - { path: "{{ log_dir }}", mode: '0755' }
+        - { path: "{{ app_dir }}/app", mode: '0755' }
+        - { path: "{{ app_dir }}/logs", mode: '0755' }
+
+    # Docker Setup
+    - name: Add Docker GPG key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Add Docker repository
+      apt_repository:
+        repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable
+        state: present
+
+    - name: Install Docker packages
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
+        state: present
+        update_cache: yes
+
+    - name: Add application user to docker group
+      user:
+        name: "{{ app_user }}"
+        groups: docker
+        append: yes
+
+    - name: Start and enable Docker service
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+
+    # Nginx Setup
+    - name: Configure Nginx reverse proxy
+      template:
+        src: templates/nginx.conf.j2
+        dest: /etc/nginx/sites-available/default
+        mode: '0644'
+      notify: Restart Nginx
+
+    - name: Enable Nginx site
+      file:
+        src: /etc/nginx/sites-available/default
+        dest: /etc/nginx/sites-enabled/default
+        state: link
+      notify: Restart Nginx
+
+    - name: Create Nginx log directories
+      file:
+        path: "{{ item }}"
+        state: directory
+        mode: '0755'
+      loop:
+        - /var/log/nginx
+        - /var/log/node-app
+
+    - name: Start and enable Nginx
+      systemd:
+        name: nginx
+        state: started
+        enabled: yes
+
+    # Application Environment Setup
+    - name: Create application environment file
+      template:
+        src: templates/app.env.j2
+        dest: "{{ app_dir }}/.env"
+        owner: "{{ app_user }}"
+        group: "{{ app_group }}"
+        mode: '0600'
+
+    # Node.js Setup
+    - name: Install Node.js repository
+      shell: |
+        curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
+      args:
+        creates: /etc/apt/sources.list.d/nodesource.list
+
+    - name: Install Node.js
+      apt:
+        name: nodejs
+        state: present
+        update_cache: yes
+
+  handlers:
+    - name: Restart Nginx
+      systemd:
+        name: nginx
+        state: restarted
+        enabled: yes 

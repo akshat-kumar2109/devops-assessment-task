@@ -1,21 +1,33 @@
 module "network" {
   source = "./network"
+  providers = {
+    aws = aws
+  }
 }
 
 module "monitoring" {
   source = "./monitoring"
+  providers = {
+    aws = aws
+  }
   project_name = var.project_name
   tags = var.tags
 }
 
 module "ecr" {
   source = "./ecr"
+  providers = {
+    aws = aws
+  }
   repository_name = "${var.project_name}-app"
   tags = var.tags
 }
 
 module "compute" {
   source = "./compute"
+  providers = {
+    aws = aws
+  }
   availability_zone = "us-east-1a"
   instance_name = "social-instance"
   key_name = "deployer-key"
