@@ -58,47 +58,52 @@ output "instance_ids" {
   value       = module.compute.instance_ids
 }
 
-output "instance_ips" {
-  description = "List of instance private IPs"
-  value       = module.compute.instance_ips
+output "instance_private_ips" {
+  description = "Private IP addresses of created instances"
+  value       = module.compute.instance_private_ips
 }
 
-output "floating_ips" {
-  description = "List of floating IPs"
-  value       = module.compute.floating_ips
+output "instance_public_ips" {
+  description = "Public IP addresses of created instances (if floating IPs were created)"
+  value       = module.compute.instance_public_ips
 }
 
-output "monitoring_instance_id" {
-  description = "ID of the monitoring instance"
-  value       = module.monitoring.monitoring_instance_id
+output "floating_ip_ids" {
+  description = "IDs of created floating IPs"
+  value       = module.compute.floating_ip_ids
 }
 
-output "monitoring_instance_guid" {
-  description = "GUID of the monitoring instance"
-  value       = module.monitoring.monitoring_instance_guid
-}
+# output "monitoring_instance_id" {
+#   description = "ID of the monitoring instance"
+#   value       = module.monitoring.monitoring_instance_id
+# }
 
-output "monitoring_key" {
-  description = "Credentials for the monitoring instance"
-  value       = module.monitoring.monitoring_key
-  sensitive   = true
-}
+# output "monitoring_instance_guid" {
+#   description = "GUID of the monitoring instance"
+#   value       = module.monitoring.monitoring_instance_guid
+# }
 
-output "logging_instance_id" {
-  description = "ID of the logging instance"
-  value       = module.monitoring.logging_instance_id
-}
+# output "monitoring_key" {
+#   description = "Credentials for the monitoring instance"
+#   value       = module.monitoring.monitoring_key
+#   sensitive   = true
+# }
 
-output "logging_instance_guid" {
-  description = "GUID of the logging instance"
-  value       = module.monitoring.logging_instance_guid
-}
+# output "logging_instance_id" {
+#   description = "ID of the logging instance"
+#   value       = module.monitoring.logging_instance_id
+# }
 
-output "logging_key" {
-  description = "Credentials for the logging instance"
-  value       = module.monitoring.logging_key
-  sensitive   = true
-}
+# output "logging_instance_guid" {
+#   description = "GUID of the logging instance"
+#   value       = module.monitoring.logging_instance_guid
+# }
+
+# output "logging_key" {
+#   description = "Credentials for the logging instance"
+#   value       = module.monitoring.logging_key
+#   sensitive   = true
+# }
 
 output "ssh_key_id" {
   description = "ID of the created SSH key"

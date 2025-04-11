@@ -35,12 +35,12 @@ output "security_group_crn" {
 
 output "gateway_id" {
   description = "ID of the created public gateway"
-  value       = module.gateway.gateway_id
+  value       = var.create_public_gateway ? module.gateway[0].gateway_id : null
 }
 
 output "gateway_crn" {
   description = "CRN of the created public gateway"
-  value       = module.gateway.gateway_crn
+  value       = var.create_public_gateway ? module.gateway[0].gateway_crn : null
 }
 
 output "routing_table_id" {

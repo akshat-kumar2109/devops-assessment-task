@@ -126,7 +126,7 @@ variable "boot_volume_size" {
 variable "create_floating_ip" {
   description = "Whether to create a floating IP for the instance"
   type        = bool
-  default     = false
+  default     = true
 }
 
 variable "tags" {

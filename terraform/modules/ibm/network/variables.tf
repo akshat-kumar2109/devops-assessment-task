@@ -1,15 +1,10 @@
-variable "vpc_name" {
-  description = "Name of the VPC"
-  type        = string
-}
-
 variable "region" {
   description = "IBM Cloud region"
   type        = string
 }
 
 variable "zone" {
-  description = "IBM Cloud zone"
+  description = "IBM Cloud zone where resources will be created"
   type        = string
   default     = "us-east-1"
 }
@@ -53,8 +48,25 @@ variable "routes" {
   default = {}
 }
 
+variable "name_prefix" {
+  description = "Prefix to be used for resource names"
+  type        = string
+}
+
+variable "subnet_cidr" {
+  description = "CIDR block for the subnet"
+  type        = string
+  default     = "10.0.1.0/24"
+}
+
 variable "tags" {
   description = "List of tags to apply to all resources"
   type        = list(string)
   default     = []
+}
+
+variable "create_public_gateway" {
+  description = "Whether to create a public gateway. Set to false if you've reached the quota limit."
+  type        = bool
+  default     = false  # Default to false since there's a quota of 1 per zone
 } 

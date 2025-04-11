@@ -1,16 +1,17 @@
-output "instance_id" {
-  description = "ID of the EC2 instance"
-  value       = module.compute.instance_id
+output "instance_ids" {
+  value = module.compute.instance_ids
 }
 
-output "instance_public_ip" {
-  description = "Public IP of the EC2 instance"
-  value       = module.compute.instance_public_ip
+output "instance_public_ips" {
+  value = module.compute.instance_public_ips
 }
 
-output "instance_private_ip" {
-  description = "Private IP address of the EC2 instance"
-  value       = module.compute.instance_private_ip
+output "instance_private_ips" {
+  value = module.compute.instance_private_ips
+}
+
+output "instance_arns" {
+  value = module.compute.instance_arns
 }
 
 output "vpc_id" {

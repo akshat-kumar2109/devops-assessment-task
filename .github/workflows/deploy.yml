@@ -7,7 +7,7 @@ on:
     branches: [ main ]
 
 jobs:
-  deploy:
+  aws-deploy:
     runs-on: ubuntu-latest
     
     steps:
@@ -31,7 +31,7 @@ jobs:
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v1
       
-    - name: Build and push Docker image
+    - name: Build and push Docker image to ECR
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY_NAME }}
@@ -41,7 +41,7 @@ jobs:
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
         
-    - name: Deploy to EC2
+    - name: Deploy to AWS EC2
       uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.EC2_HOST }}
@@ -55,12 +55,75 @@ jobs:
           docker pull ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY_NAME }}:${{ github.sha }}
           
           # Stop and remove the old container if it exists
-          docker stop node-app || true
-          docker rm node-app || true
+          docker stop node-app-aws || true
+          docker rm node-app-aws || true
           
           # Run the new container
           docker run -d \
-            --name node-app \
-            -p 3000:3000 \
+            --name node-app-aws \
+            -p 5000:5000 \
             --restart always \
             ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY_NAME }}:${{ github.sha }}
+
+  ibm-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '22.x'
+        cache: 'npm'
+        cache-dependency-path: node-app/package-lock.json
+
+    - name: Install IBM Cloud CLI
+      run: |
+        curl -fsSL https://clis.cloud.ibm.com/install/linux | sh
+        ibmcloud --version
+        ibmcloud plugin install container-registry
+        
+    - name: Login to IBM Cloud
+      env:
+        IBM_API_KEY: ${{ secrets.IBM_API_KEY }}
+        IBM_REGION: ${{ secrets.IBM_REGION }}
+      run: |
+        ibmcloud login --apikey "$IBM_API_KEY" -r "$IBM_REGION"
+        ibmcloud cr login
+        
+    - name: Build and push Docker image to IBM Container Registry
+      env:
+        ICR_NAMESPACE: ${{ secrets.ICR_NAMESPACE }}
+        ICR_REPOSITORY: ${{ secrets.ICR_REPOSITORY_NAME }}
+        IMAGE_TAG: ${{ github.sha }}
+        IBM_REGION: ${{ secrets.IBM_REGION }}
+      run: |
+        cd node-app
+        docker build -t us.icr.io/$ICR_NAMESPACE/$ICR_REPOSITORY:$IMAGE_TAG .
+        docker push us.icr.io/$ICR_NAMESPACE/$ICR_REPOSITORY:$IMAGE_TAG
+        
+    - name: Deploy to IBM Cloud Instance
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.IBM_INSTANCE_HOST }}
+        username: ubuntu
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        script: |
+          # Login to IBM Container Registry
+          ibmcloud login --apikey "${{ secrets.IBM_API_KEY }}" -r "${{ secrets.IBM_REGION }}"
+          ibmcloud cr login
+          
+          # Pull the new image
+          docker pull us.icr.io/${{ secrets.ICR_NAMESPACE }}/${{ secrets.ICR_REPOSITORY_NAME }}:${{ github.sha }}
+          
+          # Stop and remove the old container if it exists
+          docker stop node-app-ibm || true
+          docker rm node-app-ibm || true
+          
+          # Run the new container
+          docker run -d \
+            --name node-app-ibm \
+            -p 5000:5000 \
+            --restart always \
+            us.icr.io/${{ secrets.ICR_NAMESPACE }}/${{ secrets.ICR_REPOSITORY_NAME }}:${{ github.sha }}

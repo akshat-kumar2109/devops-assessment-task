@@ -30,6 +30,11 @@ variable "resource_group_id" {
   type        = string
 }
 
+variable "vpc_cidr" {
+  description = "CIDR block for the VPC and subnet"
+  type        = string
+}
+
 variable "tags" {
   description = "List of tags to apply to all resources"
   type        = list(string)

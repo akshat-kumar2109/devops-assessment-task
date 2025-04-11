@@ -18,22 +18,68 @@ module "subnet" {
 module "security_group" {
   source              = "./security_group"
   security_group_name = "social-sg"
-  ingress_rules = [{
-    cidr_blocks = "0.0.0.0/0"
-    protocol    = "tcp"
-    from_port   = 22
-    to_port     = 22
-    description = "Allow all ssh"
-  },
-  {
-    cidr_blocks = "0.0.0.0/0"
-    protocol    = "tcp"
-    from_port   = 80
-    to_port     = 80
-    description = "Allow all ssh"
-  }]
-  vpc_id = module.vpc.vpc_id
+  vpc_id              = module.vpc.vpc_id
+
+  ingress_rules = [
+    {
+      cidr_blocks = "0.0.0.0/0"
+      protocol    = "tcp"
+      from_port   = 22
+      to_port     = 22
+      description = "Allow SSH"
+    },
+    {
+      cidr_blocks = "0.0.0.0/0"
+      protocol    = "tcp"
+      from_port   = 80
+      to_port     = 80
+      description = "Allow HTTP"
+    },
+    {
+      cidr_blocks = "0.0.0.0/0"
+      protocol    = "tcp"
+      from_port   = 3000
+      to_port     = 3000
+      description = "Allow Grafana access"
+    },
+    {
+      cidr_blocks = "0.0.0.0/0"
+      protocol    = "tcp"
+      from_port   = 5000
+      to_port     = 5000
+      description = "Allow Application Port (Custom)"
+    },
+    {
+      cidr_blocks = "0.0.0.0/0"
+      protocol    = "tcp"
+      from_port   = 9090
+      to_port     = 9090
+      description = "Allow Prometheus UI/API"
+    },
+    {
+      cidr_blocks = "0.0.0.0/0"
+      protocol    = "tcp"
+      from_port   = 3100
+      to_port     = 3100
+      description = "Allow Loki API"
+    },
+    {
+      cidr_blocks = "0.0.0.0/0"
+      protocol    = "tcp"
+      from_port   = 9100
+      to_port     = 9100
+      description = "Allow Node Exporter metrics"
+    },
+    {
+      cidr_blocks = "0.0.0.0/0"
+      protocol    = "tcp"
+      from_port   = 9080
+      to_port     = 9080
+      description = "Allow Promtail HTTP listener (optional)"
+    }
+  ]
 }
+
 
 module "route" {
   source = "./route"

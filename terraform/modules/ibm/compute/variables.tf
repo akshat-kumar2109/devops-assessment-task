@@ -26,8 +26,9 @@ variable "instance_profile" {
 }
 
 variable "image_id" {
-  description = "ID of the image to use for the VSI"
+  description = "Name of the OS image to use for the VSI. If not specified, defaults to Ubuntu 22.04"
   type        = string
+  default     = ""
 }
 
 variable "ssh_key_ids" {
@@ -60,6 +61,12 @@ variable "create_floating_ip" {
   description = "Whether to create a floating IP for the instance"
   type        = bool
   default     = true
+}
+
+variable "environment" {
+  description = "Environment tag for the resources (e.g., dev, prod, staging)"
+  type        = string
+  default     = "dev"
 }
 
 variable "tags" {

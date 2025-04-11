@@ -1,0 +1,27 @@
+- name: Ensure Docker is installed
+  apt:
+    name: docker.io
+    state: present
+    update_cache: yes
+
+- name: Create Prometheus config directory
+  file:
+    path: /opt/prometheus
+    state: directory
+
+- name: Upload Prometheus config file
+  template:
+    src: prometheus.yml.j2
+    dest: /opt/prometheus/prometheus.yml
+
+- name: Run Prometheus container
+  docker_container:
+    name: prometheus
+    image: prom/prometheus:{{ prometheus_version }}
+    ports:
+      - "9090:9090"
+    volumes:
+      - /opt/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    command: --config.file=/etc/prometheus/prometheus.yml
+    network_mode: host
+    restart_policy: always

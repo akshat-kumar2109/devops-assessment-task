@@ -1,0 +1,117 @@
+- name: Ensure Docker is installed
+  apt:
+    name: docker.io
+    state: present
+    update_cache: yes
+
+- name: Create Grafana config directory
+  file:
+    path: /opt/grafana
+    state: directory
+    mode: '0755'
+
+- name: Create Grafana provisioning directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+  with_items:
+    - /opt/grafana/provisioning/datasources
+    - /opt/grafana/provisioning/dashboards
+
+- name: Remove any existing data source configurations
+  file:
+    path: "/opt/grafana/provisioning/datasources/"
+    state: absent
+
+- name: Recreate datasources directory
+  file:
+    path: /opt/grafana/provisioning/datasources
+    state: directory
+    mode: '0755'
+
+- name: Configure Loki data source
+  copy:
+    dest: /opt/grafana/provisioning/datasources/datasource.yaml
+    mode: '0644'
+    content: |
+      apiVersion: 1
+      datasources:
+        - name: Prometheus
+          type: prometheus
+          access: proxy
+          url: http://localhost:9090
+          isDefault: true
+          version: 1
+          editable: true
+          uid: prometheus
+        - name: Loki
+          type: loki
+          access: proxy
+          url: http://{{ monitor_host }}:3100
+          isDefault: false
+          version: 1
+          editable: true
+          uid: loki
+
+- name: Configure dashboard provider
+  copy:
+    dest: /opt/grafana/provisioning/dashboards/provider.yml
+    mode: '0644'
+    content: |
+      apiVersion: 1
+      providers:
+        - name: 'default'
+          orgId: 1
+          folder: ''
+          type: file
+          disableDeletion: false
+          editable: true
+          options:
+            path: /var/lib/grafana/dashboards
+
+- name: Create dashboard directory
+  file:
+    path: /opt/grafana/dashboards
+    state: directory
+    mode: '0755'
+
+- name: Copy dashboard
+  copy:
+    src: system-logs-dashboard.json
+    dest: /opt/grafana/dashboards/system-logs-dashboard.json
+    mode: '0644'
+
+- name: Copy EC2 metrics dashboard
+  copy:
+    src: ec2-instance-metrics-dashboard.json
+    dest: /opt/grafana/dashboards/ec2-instance-metrics-dashboard.json
+    mode: '0644'
+
+- name: Copy IBM Cloud metrics dashboard
+  copy:
+    src: ibm-instance-metrics-dashboard.json
+    dest: /opt/grafana/dashboards/ibm-instance-metrics-dashboard.json
+    mode: '0644'
+
+- name: Stop and remove existing Grafana container
+  docker_container:
+    name: grafana
+    state: absent
+    force_kill: yes
+
+- name: Run Grafana container
+  docker_container:
+    name: grafana
+    image: grafana/grafana:{{ grafana_version }}
+    ports:
+      - "3000:3000"
+    volumes:
+      - /opt/grafana/provisioning:/etc/grafana/provisioning
+      - /opt/grafana/dashboards:/var/lib/grafana/dashboards
+    env:
+      GF_SECURITY_ADMIN_PASSWORD: "{{ grafana_admin_password | default('admin') }}"
+      GF_SECURITY_ADMIN_USER: "{{ grafana_admin_user | default('admin') }}"
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_INSTALL_PLUGINS: "grafana-piechart-panel"
+    restart_policy: always

@@ -5,14 +5,14 @@ module "network" {
   }
 }
 
-module "monitoring" {
-  source = "./monitoring"
-  providers = {
-    aws = aws
-  }
-  project_name = var.project_name
-  tags = var.tags
-}
+# module "monitoring" {
+#   source = "./monitoring"
+#   providers = {
+#     aws = aws
+#   }
+#   project_name = var.project_name
+#   tags = var.tags
+# }
 
 module "ecr" {
   source = "./ecr"
@@ -36,8 +36,10 @@ module "compute" {
   subnet_id = module.network.subnet_ids[0]
   vpc_id = module.network.vpc_id
   tags = var.tags
-  cloudwatch_agent_profile_name = module.monitoring.cloudwatch_agent_profile_name
-  cloudwatch_config = module.monitoring.cloudwatch_config_parameter_name
+  # cloudwatch_agent_profile_name = module.monitoring.cloudwatch_agent_profile_name
+  cloudwatch_agent_profile_name = null
+  # cloudwatch_config = module.monitoring.cloudwatch_config_parameter_name
+  cloudwatch_config = null
 
-  depends_on = [ module.network, module.monitoring ]
+  depends_on = [ module.network ]
 }

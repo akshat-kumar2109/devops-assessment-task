@@ -1,0 +1,17 @@
+- hosts: all_nodes
+  become: yes
+  roles:
+    - common
+
+- hosts: monitoring
+  become: yes
+  roles:
+    - prometheus
+    - grafana
+    - loki
+
+- hosts: nodes
+  become: yes
+  roles:
+    - node_exporter
+    - promtail

@@ -54,3 +54,8 @@ variable "cloudwatch_config" {
   description = "SSM parameter name containing CloudWatch agent configuration"
   type        = string
 }
+
+variable "instance_count" {
+  description = "Number of instance to be created"
+  default = 2
+}

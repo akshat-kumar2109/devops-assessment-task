@@ -4,7 +4,7 @@ module "network" {
     ibm = ibm
   }
   
-  vpc_name         = var.vpc_name
+  name_prefix      = var.vpc_name
   region           = var.region
   zone             = var.zone
   resource_group_id = var.resource_group_id
@@ -15,21 +15,21 @@ module "network" {
   tags              = var.tags
 }
 
-module "monitoring" {
-  source = "./monitoring"
-  providers = {
-    ibm = ibm
-    ibm.ibm_log = ibm.ibm_log
-  }
+# module "monitoring" {
+#   source = "./monitoring"
+#   providers = {
+#     ibm = ibm
+#     ibm.ibm_log = ibm.ibm_log
+#   }
   
-  project_name = var.project_name
-  monitoring_instance_name = "${var.project_name}-monitoring"
-  monitoring_plan         = var.monitoring_plan
-  region                 = var.region
-  resource_group_id      = var.resource_group_id
-  alert_policies         = var.alert_policies
-  tags                   = var.tags
-}
+#   project_name = var.project_name
+#   monitoring_instance_name = "${var.project_name}-monitoring"
+#   monitoring_plan         = var.monitoring_plan
+#   region                 = var.region
+#   resource_group_id      = var.resource_group_id
+#   alert_policies         = var.alert_policies
+#   tags                   = var.tags
+# }
 
 module "registry" {
   source = "./registry"

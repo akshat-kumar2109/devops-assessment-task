@@ -1,0 +1,46 @@
+{
+    "title": "IBM Cloud Instance Metrics",
+    "timezone": "browser",
+    "schemaVersion": 38,
+    "version": 1,
+    "refresh": "10s",
+    "panels": [
+      {
+        "type": "graph",
+        "title": "CPU Usage (%)",
+        "datasource": "Prometheus",
+        "targets": [
+          {
+            "expr": "100 - (avg by (instance) (irate(node_cpu_seconds_total{instance=\"ibm-node\",mode=\"idle\"}[5m])) * 100)",
+            "legendFormat": "{{instance}}"
+          }
+        ],
+        "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 }
+      },
+      {
+        "type": "graph",
+        "title": "Memory Usage (%)",
+        "datasource": "Prometheus",
+        "targets": [
+          {
+            "expr": "(1 - (node_memory_MemAvailable_bytes{instance=\"ibm-node\"} / node_memory_MemTotal_bytes{instance=\"ibm-node\"})) * 100",
+            "legendFormat": "{{instance}}"
+          }
+        ],
+        "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 }
+      },
+      {
+        "type": "graph",
+        "title": "Disk Usage (%)",
+        "datasource": "Prometheus",
+        "targets": [
+          {
+            "expr": "(node_filesystem_size_bytes{instance=\"ibm-node\",fstype!=\"tmpfs\"} - node_filesystem_free_bytes{instance=\"ibm-node\",fstype!=\"tmpfs\"}) / node_filesystem_size_bytes{instance=\"ibm-node\",fstype!=\"tmpfs\"} * 100",
+            "legendFormat": "{{mountpoint}}"
+          }
+        ],
+        "gridPos": { "x": 0, "y": 8, "w": 24, "h": 8 }
+      }
+    ]
+  }
+  

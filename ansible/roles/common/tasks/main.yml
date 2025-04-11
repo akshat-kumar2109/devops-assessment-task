@@ -1,0 +1,40 @@
+---
+- name: Update apt cache
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: Install base dependencies
+  apt:
+    name:
+      - curl
+      - gnupg
+      - ca-certificates
+      - software-properties-common
+      - unzip
+    state: present
+
+- name: Install Docker (if not already installed)
+  apt:
+    name: docker.io
+    state: present
+
+- name: Install Docker Compose (if needed)
+  get_url:
+    url: https://github.com/docker/compose/releases/download/v2.23.3/docker-compose-linux-x86_64
+    dest: /usr/local/bin/docker-compose
+    mode: '0755'
+  when: ansible_distribution != "RedHat"
+
+- name: Enable and start Docker
+  systemd:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Add "{{ ansible_user }}" to docker group
+  user:
+    name: "{{ ansible_user }}"
+    groups: docker
+    append: yes
+  become: true

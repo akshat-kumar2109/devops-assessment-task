@@ -1,0 +1,74 @@
+- name: Set Promtail version
+  set_fact:
+    promtail_version: "2.9.3"
+
+- name: Create Promtail config directory
+  file:
+    path: /etc/promtail
+    state: directory
+    mode: '0755'
+
+- name: Create Promtail position file directory
+  file:
+    path: /opt/promtail
+    state: directory
+    mode: '0755'
+
+- name: Create Promtail config file
+  copy:
+    dest: /etc/promtail/config.yaml
+    mode: '0644'
+    content: |
+      server:
+        http_listen_port: 9080
+        grpc_listen_port: 0
+
+      positions:
+        filename: /opt/promtail/positions.yaml
+
+      clients:
+        - url: http://{{ monitor_host }}:3100/loki/api/v1/push
+          tenant_id: "default"
+          batchwait: "1s"
+          batchsize: 102400
+          timeout: "10s"
+          backoff_config:
+            min_period: "100ms"
+            max_period: "5s"
+            max_retries: 10
+
+      scrape_configs:
+        - job_name: syslog
+          static_configs:
+            - targets:
+                - localhost
+              labels:
+                job: syslog
+                instance: "{{ inventory_hostname }}"
+                __path__: /var/log/syslog
+          pipeline_stages:
+            - match:
+                selector: '{job="syslog"}'
+                stages:
+                  - regex:
+                      expression: '(?P<timestamp>[A-Z][a-z]{2}\s+\d+\s+\d+:\d+:\d+)\s+(?P<host>[^\s]+)\s+(?P<program>[^\s\[]+)(?:\[(?P<pid>\d+)\])?:\s+(?P<message>.*)'
+                  - labels:
+                      host:
+                      program:
+                      pid:
+                  - timestamp:
+                      source: timestamp
+                      format: "Jan 2 15:04:05"
+
+- name: Ensure Promtail container is running
+  community.docker.docker_container:
+    name: promtail
+    image: grafana/promtail:{{ promtail_version }}
+    state: started
+    restart_policy: always
+    volumes:
+      - /var/log:/var/log:ro
+      - /etc/promtail:/etc/promtail:ro
+      - /opt/promtail:/opt/promtail
+    network_mode: host
+    command: -config.file=/etc/promtail/config.yaml -log.level=debug

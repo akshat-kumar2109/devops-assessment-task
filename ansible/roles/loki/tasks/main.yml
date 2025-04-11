@@ -1,0 +1,47 @@
+- name: Ensure Docker is installed
+  apt:
+    name: docker.io
+    state: present
+    update_cache: yes
+
+- name: Create Loki directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0777'
+    owner: 10001
+    group: 10001
+  with_items:
+    - /opt/loki
+    - /opt/loki/chunks
+    - /opt/loki/wal
+    - /opt/loki/rules
+    - /opt/loki/index
+    - /opt/loki/index/cache
+    - /opt/loki/compactor
+
+- name: Upload Loki config
+  copy:
+    src: loki-config.yml
+    dest: /opt/loki/loki-config.yml
+    mode: '0644'
+
+- name: Run Loki container
+  docker_container:
+    name: loki
+    image: grafana/loki:{{ loki_version }}
+    ports:
+      - "3100:3100"
+    volumes:
+      - /opt/loki/loki-config.yml:/etc/loki/loki-config.yml
+      - /opt/loki/chunks:/loki/chunks
+      - /opt/loki/wal:/wal
+      - /opt/loki/rules:/loki/rules
+      - /opt/loki/index:/loki/index
+      - /opt/loki/compactor:/loki/compactor
+    user: "10001:10001"
+    network_mode: host
+    command: -config.file=/etc/loki/loki-config.yml
+    restart_policy: always
+    env:
+      GODEBUG: "netdns=go"
