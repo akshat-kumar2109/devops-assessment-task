@@ -8,3 +8,8 @@ scrape_configs:
 {% for host in groups['nodes'] %}
           - "{{ hostvars[host]['ansible_host'] }}:9100"
 {% endfor %}
+    relabel_configs:
+      - source_labels: [__address__]
+        regex: '(.*):.*'
+        target_label: instance
+        replacement: '${1}'

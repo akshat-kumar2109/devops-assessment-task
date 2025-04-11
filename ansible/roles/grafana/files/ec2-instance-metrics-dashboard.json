@@ -8,11 +8,14 @@
       {
         "type": "graph",
         "title": "CPU Usage (%)",
-        "datasource": "Prometheus",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
         "targets": [
           {
-            "expr": "100 - (avg by (instance) (irate(node_cpu_seconds_total{instance=\"aws-node\",mode=\"idle\"}[5m])) * 100)",
-            "legendFormat": "{{instance}}"
+            "expr": "100 - (avg by (instance) (irate(node_cpu_seconds_total{instance=\"3.82.4.74:9100\",mode=\"idle\"}[5m])) * 100)",
+            "legendFormat": "CPU Usage"
           }
         ],
         "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 }
@@ -20,11 +23,14 @@
       {
         "type": "graph",
         "title": "Memory Usage (%)",
-        "datasource": "Prometheus",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
         "targets": [
           {
-            "expr": "(1 - (node_memory_MemAvailable_bytes{instance=\"aws-node\"} / node_memory_MemTotal_bytes{instance=\"aws-node\"})) * 100",
-            "legendFormat": "{{instance}}"
+            "expr": "(1 - (node_memory_MemAvailable_bytes{instance=\"3.82.4.74:9100\"} / node_memory_MemTotal_bytes{instance=\"3.82.4.74:9100\"})) * 100",
+            "legendFormat": "Memory Usage"
           }
         ],
         "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 }
@@ -32,10 +38,13 @@
       {
         "type": "graph",
         "title": "Disk Usage (%)",
-        "datasource": "Prometheus",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
         "targets": [
           {
-            "expr": "(node_filesystem_size_bytes{instance=\"aws-node\",fstype!=\"tmpfs\"} - node_filesystem_free_bytes{instance=\"aws-node\",fstype!=\"tmpfs\"}) / node_filesystem_size_bytes{instance=\"aws-node\",fstype!=\"tmpfs\"} * 100",
+            "expr": "(node_filesystem_size_bytes{instance=\"3.82.4.74:9100\",fstype!=\"tmpfs\"} - node_filesystem_free_bytes{instance=\"3.82.4.74:9100\",fstype!=\"tmpfs\"}) / node_filesystem_size_bytes{instance=\"3.82.4.74:9100\",fstype!=\"tmpfs\"} * 100",
             "legendFormat": "{{mountpoint}}"
           }
         ],

@@ -3,7 +3,7 @@ grafana_version: "latest"
 loki_version: "latest"
 node_exporter_version: "latest"
 promtail_version: "latest"
-monitor_host: "23.23.70.42"
+monitor_host: "18.212.137.108"
 
 # Grafana settings
 grafana_admin_user: "admin"

@@ -104,8 +104,7 @@
   docker_container:
     name: grafana
     image: grafana/grafana:{{ grafana_version }}
-    ports:
-      - "3000:3000"
+    network_mode: host
     volumes:
       - /opt/grafana/provisioning:/etc/grafana/provisioning
       - /opt/grafana/dashboards:/var/lib/grafana/dashboards

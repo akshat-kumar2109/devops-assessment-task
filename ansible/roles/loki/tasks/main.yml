@@ -40,7 +40,6 @@
       - /opt/loki/index:/loki/index
       - /opt/loki/compactor:/loki/compactor
     user: "10001:10001"
-    network_mode: host
     command: -config.file=/etc/loki/loki-config.yml
     restart_policy: always
     env:
