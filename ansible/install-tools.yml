@@ -1,0 +1,59 @@
+---
+- name: Install Docker, AWS CLI, IBM Cloud CLI
+  hosts: nodes
+  become: true
+  vars:
+    aws_cli_url: "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip"
+    ibmcloud_cli_url: "https://clis.cloud.ibm.com/install/linux"
+
+  tasks:
+
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install required packages
+      apt:
+        name:
+          - unzip
+          - curl
+          - docker.io
+        state: present
+
+    - name: Add user to docker group
+      user:
+        name: "{{ ansible_user }}"
+        groups: docker
+        append: yes
+
+    - name: Download AWS CLI v2 installer
+      get_url:
+        url: "{{ aws_cli_url }}"
+        dest: /tmp/awscliv2.zip
+
+    - name: Unzip AWS CLI installer
+      unarchive:
+        src: /tmp/awscliv2.zip
+        dest: /tmp
+        remote_src: yes
+
+    - name: Install AWS CLI
+      command: /tmp/aws/install
+      args:
+        creates: /usr/local/bin/aws
+
+    - name: Download and install IBM Cloud CLI
+      shell: |
+        curl -fsSL "{{ ibmcloud_cli_url }}" | bash
+      args:
+        creates: /usr/local/bin/ibmcloud
+
+    - name: Verify Docker, AWS, and IBM CLI installation
+      shell: |
+        docker --version && aws --version && ibmcloud --version
+      register: verify_output
+      changed_when: false
+
+    - name: Print verification output
+      debug:
+        msg: "{{ verify_output.stdout_lines }}"
