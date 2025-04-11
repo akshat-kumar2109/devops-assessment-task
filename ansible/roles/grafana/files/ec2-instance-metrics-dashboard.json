@@ -1,55 +1,54 @@
 {
-    "title": "EC2 Instance Metrics",
-    "timezone": "browser",
-    "schemaVersion": 38,
-    "version": 1,
-    "refresh": "10s",
-    "panels": [
-      {
-        "type": "graph",
-        "title": "CPU Usage (%)",
-        "datasource": {
-          "type": "prometheus",
-          "uid": "prometheus"
-        },
-        "targets": [
-          {
-            "expr": "100 - (avg by (instance) (irate(node_cpu_seconds_total{instance=\"3.82.4.74:9100\",mode=\"idle\"}[5m])) * 100)",
-            "legendFormat": "CPU Usage"
-          }
-        ],
-        "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 }
+  "title": "EC2 Instance Metrics",
+  "timezone": "browser",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "10s",
+  "panels": [
+    {
+      "type": "graph",
+      "title": "CPU Usage (%)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
       },
-      {
-        "type": "graph",
-        "title": "Memory Usage (%)",
-        "datasource": {
-          "type": "prometheus",
-          "uid": "prometheus"
-        },
-        "targets": [
-          {
-            "expr": "(1 - (node_memory_MemAvailable_bytes{instance=\"3.82.4.74:9100\"} / node_memory_MemTotal_bytes{instance=\"3.82.4.74:9100\"})) * 100",
-            "legendFormat": "Memory Usage"
-          }
-        ],
-        "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 }
+      "targets": [
+        {
+          "expr": "100 - (avg by (instance) (irate(node_cpu_seconds_total{instance=\"54.80.125.217\",mode=\"idle\"}[5m])) * 100)",
+          "legendFormat": "CPU Usage"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 }
+    },
+    {
+      "type": "graph",
+      "title": "Memory Usage (%)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
       },
-      {
-        "type": "graph",
-        "title": "Disk Usage (%)",
-        "datasource": {
-          "type": "prometheus",
-          "uid": "prometheus"
-        },
-        "targets": [
-          {
-            "expr": "(node_filesystem_size_bytes{instance=\"3.82.4.74:9100\",fstype!=\"tmpfs\"} - node_filesystem_free_bytes{instance=\"3.82.4.74:9100\",fstype!=\"tmpfs\"}) / node_filesystem_size_bytes{instance=\"3.82.4.74:9100\",fstype!=\"tmpfs\"} * 100",
-            "legendFormat": "{{mountpoint}}"
-          }
-        ],
-        "gridPos": { "x": 0, "y": 8, "w": 24, "h": 8 }
-      }
-    ]
-  }
-  
+      "targets": [
+        {
+          "expr": "(1 - (node_memory_MemAvailable_bytes{instance=\"54.80.125.217\"} / node_memory_MemTotal_bytes{instance=\"54.80.125.217\"})) * 100",
+          "legendFormat": "Memory Usage"
+        }
+      ],
+      "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 }
+    },
+    {
+      "type": "graph",
+      "title": "Disk Usage (%)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "expr": "(node_filesystem_size_bytes{instance=\"54.80.125.217\",fstype!=\"tmpfs\"} - node_filesystem_free_bytes{instance=\"54.80.125.217\",fstype!=\"tmpfs\"}) / node_filesystem_size_bytes{instance=\"54.80.125.217\",fstype!=\"tmpfs\"} * 100",
+          "legendFormat": "{{mountpoint}}"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 8, "w": 24, "h": 8 }
+    }
+  ]
+}
