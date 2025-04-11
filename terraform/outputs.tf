@@ -10,3 +10,8 @@ output "aws_instance_public_ip" {
 output "ibm_instance_public_ip" {
   value = module.ibm.instance_public_ips
 }
+
+output "ibm_registry_url" {
+  description = "URL of the IBM Container Registry"
+  value       = module.ibm.registry_url
+}

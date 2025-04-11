@@ -109,3 +109,8 @@ output "ssh_key_id" {
   description = "ID of the created SSH key"
   value       = ibm_is_ssh_key.deployer.id
 }
+
+output "registry_url" {
+  description = "URL of the container registry"
+  value       = module.registry.registry_url
+}

@@ -34,13 +34,20 @@ module "network" {
 module "registry" {
   source = "./registry"
   providers = {
-    ibm = ibm.ibm_cr
+    ibm.ibm_cr = ibm.ibm_cr
+    ibm.ibm_log = ibm.ibm_log
   }
   
-  project_name = var.project_name
-  region       = var.region
+  namespace_name    = lower(replace(var.project_name, "/[^a-z0-9]/", ""))
   resource_group_id = var.resource_group_id
-  tags         = var.tags
+  
+  # Optional configurations
+  create_iam_policy = true
+  user_email        = "akshatkumar1101@gmail.com"
+  registry_access_roles = ["Manager", "Reader"]
+  
+  enable_retention_policy    = true
+  retention_images_per_repo = 10
 }
 
 module "compute" {
