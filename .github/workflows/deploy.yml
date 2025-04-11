@@ -89,8 +89,9 @@ jobs:
         IBM_API_KEY: ${{ secrets.IBM_API_KEY }}
         IBM_REGION: ${{ secrets.IBM_REGION }}
       run: |
-        ibmcloud login --apikey "$IBM_API_KEY" -r "$IBM_REGION"
+        ibmcloud login --apikey "$IBM_API_KEY" -r "${{ secrets.IBM_REGION }}"
         ibmcloud cr login
+        ibmcloud cr region-set global
         
     - name: Build and push Docker image to IBM Container Registry
       env:
@@ -100,8 +101,8 @@ jobs:
         IBM_REGION: ${{ secrets.IBM_REGION }}
       run: |
         cd node-app
-        docker build -t us.icr.io/$ICR_NAMESPACE/$ICR_REPOSITORY:$IMAGE_TAG .
-        docker push us.icr.io/$ICR_NAMESPACE/$ICR_REPOSITORY:$IMAGE_TAG
+        docker build -t icr.io/$ICR_NAMESPACE/$ICR_REPOSITORY:$IMAGE_TAG .
+        docker push icr.io/$ICR_NAMESPACE/$ICR_REPOSITORY:$IMAGE_TAG
         
     - name: Deploy to IBM Cloud Instance
       uses: appleboy/ssh-action@master
@@ -115,7 +116,7 @@ jobs:
           ibmcloud cr login
           
           # Pull the new image
-          docker pull us.icr.io/${{ secrets.ICR_NAMESPACE }}/${{ secrets.ICR_REPOSITORY_NAME }}:${{ github.sha }}
+          docker pull icr.io/${{ secrets.ICR_NAMESPACE }}/${{ secrets.ICR_REPOSITORY_NAME }}:${{ github.sha }}
           
           # Stop and remove the old container if it exists
           docker stop node-app-ibm || true
