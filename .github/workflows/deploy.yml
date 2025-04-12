@@ -143,11 +143,13 @@ jobs:
           docker pull icr.io/${{ secrets.ICR_NAMESPACE }}/${{ secrets.ICR_REPOSITORY_NAME }}:${{ github.sha }}
 
           # Cleanup existing container if any
-          if docker ps -a --format '{{.Names}}' | grep -w node-app-ibm > /dev/null; then
+          if docker ps -a --format '{{.Names}}' | grep -w node-app-ibm > /dev/null 2>&1; then
             docker stop node-app-ibm || true
             docker rm node-app-ibm || true
+          else
+            echo "Container node-app-ibm does not exist. Skipping stop/remove."
           fi
 
           # Run the new container
-          docker run -d --name node-app-ibm -p 80:3000 ${{ secrets.IBM_CLOUD_REGISTRY }}/my-node-app:latest
+          docker run -d --name node-app-ibm -p 80:3000 icr.io/${{ secrets.ICR_NAMESPACE }}/${{ secrets.ICR_REPOSITORY_NAME }}:${{ github.sha }}
         ENDSSH
