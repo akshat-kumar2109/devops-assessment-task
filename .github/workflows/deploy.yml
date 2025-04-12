@@ -41,34 +41,25 @@ jobs:
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
         
-
-    - name: Setup SSH Key
+    - name: Create AWS Credentials Script
       run: |
-        echo "${{ secrets.SSH_PRIVATE_KEY }}" > key.pem
-        chmod 600 key.pem
+        cat << EOF > aws_creds.sh
+        export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+        export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        export AWS_REGION=${{ secrets.AWS_REGION }}
+        EOF
 
-    - name: SSH into EC2 and run commands
-      env:
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        AWS_REGION: ${{ secrets.AWS_REGION }}
+    - name: Copy AWS creds to EC2
       run: |
-        ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
-          echo "Connected!"
-          uname -a
+        scp -o StrictHostKeyChecking=no -i key.pem aws_creds.sh ubuntu@${{ secrets.EC2_HOST }}:/home/ec2-user/aws_creds.sh
 
-        cat > ~/.aws/credentials <<EOC
-        [default]
-        aws_access_key_id=${AWS_ACCESS_KEY_ID}
-        aws_secret_access_key=${AWS_SECRET_ACCESS_KEY}
-        EOC
+    - name: SSH and deploy Docker container from ECR
+      run: |
+        ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@${{ secrets.EC2_HOST }} << 'ENDSSH'
+          source ~/aws_creds.sh
 
-        cat > ~/.aws/config <<EOC
-        [default]
-        region=${AWS_REGION}
-        output=json
-        EOC
-
+          echo "Verifying credentials..."
+          aws sts get-caller-identity || { echo "Invalid AWS credentials"; exit 1; }
 
           aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}
           docker pull ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY_NAME }}:${{ github.sha }}
