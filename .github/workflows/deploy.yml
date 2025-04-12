@@ -133,6 +133,9 @@ jobs:
           # If you're using IBM Container Registry (ICR)
           ibmcloud login --apikey ${{ secrets.IBM_API_KEY }} -r ${{ secrets.IBM_REGION }} -g terraform
 
+          #Installing ibmcloud cr plugin
+          ibmcloud plugin install container-registry
+
           # Login to ICR
           ibmcloud cr login
 
