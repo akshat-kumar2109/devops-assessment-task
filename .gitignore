@@ -67,7 +67,7 @@ id_rsa*
 id_dsa*
 known_hosts
 authorized_keys
-deployer-key
+deployer-key*
 
 # Build and Dist directories
 dist/

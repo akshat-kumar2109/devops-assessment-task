@@ -8,7 +8,6 @@ The following secrets need to be configured in your GitHub repository:
 
 ### Deploy Key
 - `DEPLOY_KEY`: The private SSH key content used for deployment
-  - Generate using: `ssh-keygen -t rsa -b 4096 -f ../terraform/deployer-key deployer-key -N ""`
   - Add the private key content as the secret value `SSH_PRIVATE_KEY`
 
 ### AWS Configuration

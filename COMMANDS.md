@@ -16,7 +16,8 @@ Ensure you have the following tools installed:
 
 1. Create an SSH key pair for deployment:
    ```bash
-   ssh-keygen -t rsa -b 4096 -f terraform/deployer-key deployer-key -N ""
+   cd devops-assessment-task
+   ssh-keygen -t rsa -b 4096 -f terraform/deployer-key
    ```
 
 2. This will create two files:
@@ -73,6 +74,7 @@ Configure all required secrets in your GitHub repository:
 
 3. Run the Ansible playbook:
    ```bash
+   cd devops-assessment-task/ansible
    ansible-playbook -i inventory.ini site.yml install-tools.yml
    ```
 

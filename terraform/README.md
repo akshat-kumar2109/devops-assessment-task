@@ -76,8 +76,9 @@ terraform/
 ## Prerequisites
 
 1. Install Terraform
-2. Configure AWS CLI with credentials
-3. Configure IBM Cloud CLI with credentials
+2. Configure AWS CLI with credentials - use `us-east-1` as region
+3. Configure IBM Cloud CLI with credentials - use `us-east` as region
+4. Create an IAM role in AWS so that it can be used by terraform provider with required permissions.
 
 ## Usage
 

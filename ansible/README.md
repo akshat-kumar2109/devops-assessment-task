@@ -51,17 +51,25 @@ ansible/
    ```ini
    # Monitoring server
    [monitoring]
-   monitor ansible_host=YOUR_MONITOR_IP  # Replace with actual IP
+   monitor.example.com ansible_host="54.162.249.25" ansible_user=ubuntu  # Replace with actual monitoring server IP
 
-   # Application servers
-   [application]
-   aws_node ansible_host=YOUR_AWS_IP     # Replace with actual AWS IP
-   ibm_node ansible_host=YOUR_IBM_IP     # Replace with actual IBM IP
+   # Nodes servers
+   [nodes]
+   aws-node ansible_host="54.224.81.165" ansible_user=ubuntu     # Replace with actual AWS EC2 instance IP
+   ibm-node ansible_host="150.239.109.201" ansible_user=ubuntu     # Replace with actual IBM Cloud instance IP
 
-   [all:vars]
-   ansible_user=ubuntu
-   ansible_ssh_private_key_file=./deployer-key
-   ansible_python_interpreter=/usr/bin/python3
+   [all_nodes:children]
+   monitoring
+   nodes
+   ```
+
+3. Update ansible/roles/grafana/files/ec2-instance-metrics-dashboard.json with EC2 instance IP
+
+4. Update ansible/roles/grafana/files/ibm-instance-metrics-dashboard.json with IBM instance IP
+
+5. Update the monitoring server IP in `group_vars/all.yml`:
+   ```yaml
+   monitor_host: "YOUR_MONITORING_SERVER_IP"
    ```
 
 ### 2. Security Notes
@@ -86,15 +94,8 @@ ansible/
   - Password: admin123 (change this in production)
 
 ## Running the Playbook
-
-1. **Test Connection**
    ```bash
-   ansible all -i inventory.ini -m ping
-   ```
-
-2. **Run the Playbook**
-   ```bash
-   ansible-playbook -i inventory.ini site.yml
+   ansible-playbook -i inventory.ini site.yml install-tools.yml
    ```
 
 ## Troubleshooting
