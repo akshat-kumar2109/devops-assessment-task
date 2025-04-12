@@ -14,7 +14,7 @@
       },
       "targets": [
         {
-          "expr": "100 - (avg by (instance) (irate(node_cpu_seconds_total{instance=\"54.80.125.217\",mode=\"idle\"}[5m])) * 100)",
+          "expr": "100 - (avg by (instance) (irate(node_cpu_seconds_total{instance=\"174.129.153.244\",mode=\"idle\"}[5m])) * 100)",
           "legendFormat": "CPU Usage"
         }
       ],
@@ -29,7 +29,7 @@
       },
       "targets": [
         {
-          "expr": "(1 - (node_memory_MemAvailable_bytes{instance=\"54.80.125.217\"} / node_memory_MemTotal_bytes{instance=\"54.80.125.217\"})) * 100",
+          "expr": "(1 - (node_memory_MemAvailable_bytes{instance=\"174.129.153.244\"} / node_memory_MemTotal_bytes{instance=\"174.129.153.244\"})) * 100",
           "legendFormat": "Memory Usage"
         }
       ],
@@ -44,7 +44,7 @@
       },
       "targets": [
         {
-          "expr": "(node_filesystem_size_bytes{instance=\"54.80.125.217\",fstype!=\"tmpfs\"} - node_filesystem_free_bytes{instance=\"54.80.125.217\",fstype!=\"tmpfs\"}) / node_filesystem_size_bytes{instance=\"54.80.125.217\",fstype!=\"tmpfs\"} * 100",
+          "expr": "(node_filesystem_size_bytes{instance=\"174.129.153.244\",fstype!=\"tmpfs\"} - node_filesystem_free_bytes{instance=\"174.129.153.244\",fstype!=\"tmpfs\"}) / node_filesystem_size_bytes{instance=\"174.129.153.244\",fstype!=\"tmpfs\"} * 100",
           "legendFormat": "{{mountpoint}}"
         }
       ],
