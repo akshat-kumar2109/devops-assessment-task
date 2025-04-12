@@ -50,10 +50,10 @@ jobs:
         EOF
 
     - name: Setup SSH Key
-       run: |
+      run: |
          echo "${{ secrets.SSH_PRIVATE_KEY }}" > key.pem
          chmod 600 key.pem
-         
+
     - name: Copy AWS creds to EC2
       run: |
         scp -o StrictHostKeyChecking=no -i key.pem aws_creds.sh ubuntu@${{ secrets.EC2_HOST }}:/home/ubuntu/aws_creds.sh
