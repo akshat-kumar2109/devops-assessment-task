@@ -1,75 +1,214 @@
-# CI/CD Setup for Node.js Application
+# DevOps Engineer Assessment Task
 
-This repository contains the CI/CD configuration for deploying a Node.js application to AWS EC2 using GitHub Actions and Amazon ECR.
+## Configuration Management
+
+### Sensitive Files
+The following files contain sensitive information and should not be committed to Git:
+
+1. **Terraform Variables (`terraform/terraform.tfvars`)**
+   - Contains cloud provider credentials and configuration
+   - Use `terraform.tfvars.template` as a base
+   - Never commit actual credentials
+
+2. **Ansible Inventory (`ansible/inventory.ini`)**
+   - Contains server IP addresses
+   - Use `inventory.ini.template` as a base
+   - Never commit actual IP addresses
+
+### Setting Up Configuration Files
+
+1. **For Terraform:**
+   ```bash
+   cp terraform/terraform.tfvars.template terraform/terraform.tfvars
+   ```
+   Then edit `terraform.tfvars` with your values:
+   ```hcl
+   aws_region = "us-east-1"  # Default 
+   vpc_name = "social-vpc"   # Default
+   vpc_cidr = "10.0.0.0/16"  # Default
+   project_name = "social-app"  # Default
+   environment = "production"  # Default
+   ibm_region = "us-east"  # Default
+   ibm_zone = "us-east-1"  # Default
+   ibm_resource_group_id = ""
+   ibm_instance_name = "social-instance"  # Default
+   monitoring_plan = "lite"  # Default
+   ibmcloud_api_key = ""
+   iaas_classic_username = ""
+   iaas_classic_api_key = ""
+   resource_group = ""
+   ```
+
+2. **For Ansible:**
+   ```bash
+   cp ansible/inventory.ini.template ansible/inventory.ini
+   ```
+   ```ini
+   # Monitoring server
+   [monitoring]
+   monitor.example.com ansible_host=<MONITORING_SERVER_IP> ansible_user=ubuntu  # Replace with actual monitoring server IP
+
+   # Nodes servers
+   [nodes]
+   aws-node ansible_host=<AWS_INSTANCE_IP> ansible_user=ubuntu     # Replace with actual AWS EC2 instance IP
+   ibm-node ansible_host=<IBM_INSTANCE_IP> ansible_user=ubuntu     # Replace with actual IBM Cloud instance IP
+
+   [all_nodes:children]
+   monitoring
+   nodes
+   ```
+
+### Security Notes
+
+- Never commit files containing:
+  - Cloud provider credentials
+  - API keys
+  - Server IP addresses
+  - SSH private keys
+  - Resource IDs
+
+- Add these files to `.gitignore`:
+  ```
+  # Terraform
+  terraform.tfvars
+  *.tfstate
+  *.tfstate.*
+  .terraform/
+
+  # Ansible
+  inventory.ini
+  group_vars/all.yml
+  ```
+
+## Directory Structure
+```
+.
+├── .github/
+│   └── workflows/
+│       └── deploy.yml          # GitHub Actions workflow
+├── ansible/
+│   ├── group_vars/
+│   │   └── all.yml            # Global variables
+│   ├── roles/
+│   │   ├── common/            # Common configurations
+│   │   ├── grafana/
+│   │   │   ├── files/
+│   │   │   │   ├── system-logs-dashboard.json
+│   │   │   │   └── grafana.ini
+│   │   │   └── tasks/
+│   │   │       └── main.yml
+│   │   ├── loki/
+│   │   │   ├── files/
+│   │   │   │   └── loki-config.yml
+│   │   │   └── tasks/
+│   │   │       └── main.yml
+│   │   ├── node_exporter/
+│   │   │   └── tasks/
+│   │   │       └── main.yml
+│   │   └── promtail/
+│   │       └── tasks/
+│   │           └── main.yml
+│   ├── inventory.ini           # Inventory file
+│   ├── site.yml               # Main playbook
+│   └── README.md
+├── node-app/
+│   ├── src/
+│   │   ├── index.js           # Main application file
+│   │   └── routes/            # API routes
+│   ├── Dockerfile             # Container configuration
+│   ├── package.json           # Dependencies and scripts
+│   └── README.md
+├── terraform/
+│   ├── modules/
+│   │   ├── aws/
+│   │   │   ├── compute/
+│   │   │   ├── ecr/
+│   │   │   ├── monitoring/
+│   │   │   └── network/
+│   │   └── ibm/
+│   │       ├── compute/
+│   │       ├── network/
+│   │       └── registry/
+│   ├── main.tf                # Main configuration
+│   ├── variables.tf           # Variable definitions
+│   ├── outputs.tf             # Output definitions
+│   ├── providers.tf           # Provider configurations
+│   ├── terraform.tfvars       # Variable values
+│   └── README.md
+└── README.md                  # This file
+```
 
 ## Prerequisites
 
-1. AWS Account with:
-   - EC2 instance running
-   - ECR repository created (via Terraform)
-   - IAM user with appropriate permissions for ECR and EC2
+1. **Local Development Tools**
+   - Git
+   - Node.js v22.x
+   - Docker
+   - Terraform v1.7.x
+   - Ansible v2.15.x
+   - AWS CLI
+   - IBM Cloud CLI
 
-2. GitHub repository secrets:
-   - `AWS_ACCESS_KEY_ID`: AWS IAM user access key
-   - `AWS_SECRET_ACCESS_KEY`: AWS IAM user secret key
-   - `AWS_REGION`: AWS region (e.g., us-east-1)
-   - `EC2_HOST`: Public IP or DNS of your EC2 instance
-   - `SSH_PRIVATE_KEY`: SSH private key for EC2 instance access
-   - `ECR_REPOSITORY_NAME`: Name of the ECR repository (e.g., "social-project-app")
+2. **Cloud Provider Accounts**
+   - AWS Account
+   - IBM Cloud Account
 
-## Setup Instructions
+## Getting Started
 
-1. Set up the server environment:
+1. **Clone the Repository**
    ```bash
-   cd ansible
-   ansible-playbook -i inventory.ini server-setup.yml
+   git clone <repository-url>
+   cd devops-engineer-assessment-task
    ```
 
-2. Deploy the infrastructure with Terraform:
-   ```bash
-   cd terraform
-   terraform init
-   terraform apply
-   ```
+2. **Set up Infrastructure**
+   - Follow instructions in [terraform/README.md](./terraform/README.md)
+   - This will create necessary cloud resources
 
-3. Configure GitHub repository:
-   - Go to Settings > Secrets and Variables > Actions
-   - Add all required secrets listed above
-   - Make sure to set `ECR_REPOSITORY_NAME` to match the name created by Terraform
+3. **Configure Monitoring**
+   - Follow instructions in [ansible/README.md](./ansible/README.md)
+   - This will set up Grafana, Prometheus, and Loki
 
-4. Push code to main branch:
-   - The GitHub Actions workflow will automatically:
-     - Build the Node.js application
-     - Create a Docker image
-     - Push to ECR
-     - Deploy to EC2
+4. **Deploy Application**
+   - Follow instructions in [node-app/README.md](./node-app/README.md)
+   - Application will be deployed via GitHub Actions
 
-## Workflow Steps
+## Architecture
 
-1. **Build**:
-   - Checks out code
-   - Sets up Node.js
-   - Installs dependencies
-   - Builds Docker image
+```
+                                   ┌─────────────┐
+                                   │  GitHub     │
+                                   │  Actions    │
+                                   └─────┬───────┘
+                                         │
+                         ┌───────────────┴──────────────┐
+                         │                              │
+                   ┌─────┴────┐                   ┌─────┴────┐
+                   │   AWS    │                   │   IBM    │
+                   │   EC2    │                   │  Cloud   │
+                   └─────┬────┘                   └─────┬────┘
+                         │                              │
+                   ┌─────┴────┐                   ┌─────┴────┐
+                   │ Node.js  │                   │ Node.js  │
+                   │   App    │                   │   App    │
+                   └──────────┘                   └──────────┘
+                         │                              │
+                         └──────────────┬──────────────┘
+                                       │
+                               ┌───────┴───────┐
+                               │  Monitoring   │
+                               │   Server     │
+                               └─────────────┘
+```
 
-2. **Deploy**:
-   - Logs in to Amazon ECR
-   - Pushes image to ECR
-   - Connects to EC2
-   - Pulls new image from ECR
-   - Updates running container
+## Workflow
 
-## Monitoring
+1. Push code to GitHub repository
+2. GitHub Actions workflow triggers
+3. Application is built and pushed to container registries
+4. Application is deployed to both AWS and IBM Cloud
+5. Monitoring and logging are configured via Ansible
 
-- Application runs on port 3000
-- Check container logs: `docker logs node-app`
-- Check container status: `docker ps`
-- View ECR images: AWS Console > ECR > Repositories > [repository-name]
+## Support
 
-## ECR Repository
-
-The ECR repository is created by Terraform with the following features:
-- Image tag mutability enabled
-- Automatic image scanning on push
-- Lifecycle policy to maintain only the last 5 images
-- Force delete enabled for easier cleanup 
+For any issues or questions, please open an issue in the repository. 

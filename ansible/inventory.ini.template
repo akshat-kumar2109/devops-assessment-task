@@ -1,0 +1,15 @@
+# Monitoring server
+[monitoring]
+monitor.example.com ansible_host=<MONITORING_SERVER_IP> ansible_user=ubuntu  # Replace with actual monitoring server IP
+
+# Nodes servers
+[nodes]
+aws-node ansible_host=<AWS_INSTANCE_IP> ansible_user=ubuntu     # Replace with actual AWS EC2 instance IP
+ibm-node ansible_host=<IBM_INSTANCE_IP> ansible_user=ubuntu     # Replace with actual IBM Cloud instance IP
+
+[all_nodes:children]
+monitoring
+nodes
+
+# Note: Copy this file to inventory.ini and replace placeholder values with actual IPs.
+# Do not commit inventory.ini with actual IPs to Git. 

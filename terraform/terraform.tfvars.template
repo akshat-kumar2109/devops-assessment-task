@@ -1,0 +1,14 @@
+aws_region = "us-east-1"  # Default 
+vpc_name = "social-vpc"   # Default
+vpc_cidr = "10.0.0.0/16"  # Default
+project_name = "social-app"  # Default
+environment = "production"  # Default
+ibm_region = "us-east"  # Default
+ibm_zone = "us-east-1"  # Default
+ibm_resource_group_id = ""
+ibm_instance_name = "social-instance"  # Default
+monitoring_plan = "lite"  # Default
+ibmcloud_api_key = ""
+iaas_classic_username = ""
+iaas_classic_api_key = ""
+resource_group = ""
