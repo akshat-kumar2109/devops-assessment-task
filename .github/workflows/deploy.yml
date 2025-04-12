@@ -80,30 +80,6 @@ jobs:
 
         ENDSSH
 
-    # - name: Deploy to AWS EC2
-    #   uses: appleboy/ssh-action@master
-    #   with:
-    #     host: ${{ secrets.EC2_HOST }}
-    #     username: ubuntu
-    #     key: ${{ secrets.SSH_PRIVATE_KEY }}
-    #     script: |
-    #       # Login to ECR
-    #       aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}
-          
-    #       # Pull the new image
-    #       docker pull ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY_NAME }}:${{ github.sha }}
-          
-    #       # Stop and remove the old container if it exists
-    #       docker stop node-app-aws || true
-    #       docker rm node-app-aws || true
-          
-    #       # Run the new container
-    #       docker run -d \
-    #         --name node-app-aws \
-    #         -p 5000:5000 \
-    #         --restart always \
-    #         ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY_NAME }}:${{ github.sha }}
-
   ibm-deploy:
     runs-on: ubuntu-latest
     
@@ -144,27 +120,31 @@ jobs:
         docker build -t icr.io/$ICR_NAMESPACE/$ICR_REPOSITORY:$IMAGE_TAG .
         docker push icr.io/$ICR_NAMESPACE/$ICR_REPOSITORY:$IMAGE_TAG
         
-    - name: Deploy to IBM Cloud Instance
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.IBM_INSTANCE_HOST }}
-        username: ubuntu
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
-        script: |
-          # Login to IBM Container Registry
-          ibmcloud login --apikey "${{ secrets.IBM_API_KEY }}" -r "${{ secrets.IBM_REGION }}"
+    - name: Save IBM Cloud SSH Key
+      run: |
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ibm-key.pem
+        chmod 600 ibm-key.pem
+
+    - name: SSH into IBM Cloud VM and deploy Docker container
+      run: |
+        ssh -o StrictHostKeyChecking=no -i ibm-key.pem ubuntu@${{ secrets.IBM_INSTANCE_HOST }} << 'ENDSSH'
+          echo "Logging into IBM Cloud Container Registry..."
+          
+          # If you're using IBM Container Registry (ICR)
+          ibmcloud login --apikey ${{ secrets.IBM_API_KEY }} -r ${{ secrets.IBM_REGION }} -g terraform
+
+          # Login to ICR
           ibmcloud cr login
-          
-          # Pull the new image
+
+          # Pull image from IBM Cloud Container Registry (ICR)
           docker pull icr.io/${{ secrets.ICR_NAMESPACE }}/${{ secrets.ICR_REPOSITORY_NAME }}:${{ github.sha }}
-          
-          # Stop and remove the old container if it exists
-          docker stop node-app-ibm || true
-          docker rm node-app-ibm || true
-          
+
+          # Cleanup existing container if any
+          if docker ps -a --format '{{.Names}}' | grep -w node-app-ibm > /dev/null; then
+            docker stop node-app-ibm || true
+            docker rm node-app-ibm || true
+          fi
+
           # Run the new container
-          docker run -d \
-            --name node-app-ibm \
-            -p 5000:5000 \
-            --restart always \
-            us.icr.io/${{ secrets.ICR_NAMESPACE }}/${{ secrets.ICR_REPOSITORY_NAME }}:${{ github.sha }}
+          docker run -d --name node-app-ibm -p 80:3000 ${{ secrets.IBM_CLOUD_REGISTRY }}/my-node-app:latest
+        ENDSSH
